@@ -8,4 +8,5 @@ vivado/**
 !vivado/**/*.bit
 !vivado/**/*.ltx
 !vivado/**/*.ila
-
+!vivado/**/bd_design.tcl
+!vivado/**/recreate_project.tcl
