@@ -1,0 +1,11 @@
+vivado/**
+!vivado/**/
+
+# Keep this constraints file tracked
+!vivado/xdma_demo.srcs/constrs_1/new/cons.xdc
+
+# Track generated FPGA output/debug artifacts
+!vivado/**/*.bit
+!vivado/**/*.ltx
+!vivado/**/*.ila
+
