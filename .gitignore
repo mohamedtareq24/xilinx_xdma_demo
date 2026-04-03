@@ -10,3 +10,6 @@ vivado/**
 !vivado/**/*.ila
 !vivado/**/bd_design.tcl
 !vivado/**/recreate_project.tcl
+
+# Ignore deprecated helper scripts directory
+testing/python/old/
