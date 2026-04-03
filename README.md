@@ -87,7 +87,9 @@ This repo includes Xilinx Linux driver references under:
 
 Useful included resources:
 
+- Xilinx DMA IP drivers repository: https://github.com/Xilinx/dma_ip_drivers/tree/master/
 - Xilinx DMA IP driver documentation landing page (from local README)
+- Xilinx AR65444 PDF: `testing/Xilinx_Answer_65444_Linux.pdf`
 - AR65444 Linux package and helper install script
 
 Example install flow (from `build-install-driver-linux.sh`):
