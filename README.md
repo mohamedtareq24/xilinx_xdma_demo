@@ -24,6 +24,7 @@ In this demo, XDMA is the bridge between host software and the FIR hardware in p
 - **FPGA device used:** `xczu4ev-sfvc784-2-i` (Xilinx Zynq UltraScale+ MPSoC family).
 
 ![Board used in this demo](docs/board.png)
+
 The board is connected to the host PC via one of the PCIe slots on the motherboard
 
 The hardware design includes:
