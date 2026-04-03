@@ -13,3 +13,5 @@ vivado/**
 
 # Ignore deprecated helper scripts directory
 testing/python/old/
+testing/python/input_signal.bin
+testing/python/output_signal.bin
