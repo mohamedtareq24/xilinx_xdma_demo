@@ -40,13 +40,17 @@ Top-level block design:
 ![Vivado block design](docs/bd.png)
 
 ### FIR Notes
-
 - FIR architecture is transposed/pipelined for streaming operation.
 - Current implementation uses **5 taps**.
+- Previous standalone FIR implementation reference:
+  https://github.com/mohamedtareq24/DSP_Custom_AXI_IPs/tree/main/rtl/FIR
+- https://github.com/mohamedtareq24/DSP_Custom_AXI_IPs/tree/main/docs/FIR#readme
 - FIR supports:
   - AXI-Stream Slave (`S_AXIS`) input
   - AXI-Stream Master (`M_AXIS`) output
   - AXI-Lite Slave (`S_AXI`) control/coefficients
+  - parametrized tap count
+
 
 ### Addressing and Register Access
 
@@ -88,9 +92,8 @@ This repo includes Xilinx Linux driver references under:
 Useful included resources:
 
 - Xilinx DMA IP drivers repository: https://github.com/Xilinx/dma_ip_drivers/tree/master/
-- Xilinx DMA IP driver documentation landing page (from local README)
 - Xilinx AR65444 PDF: `testing/Xilinx_Answer_65444_Linux.pdf`
-- AR65444 Linux package and helper install script
+
 
 Example install flow (from `build-install-driver-linux.sh`):
 
@@ -251,10 +254,3 @@ sudo $TESTS_BIN/reg_rw /dev/xdma0_user 0x4 r
 **Expected Behavior for Pass-Through Test:**
 
 With tap coefficients `[1, 0, 0, 0, 0]`, the output should be input shifted by ~4 samples (pipeline latency), then match sample-by-sample afterward. The 4-sample offset is typical for a 5-tap transposed FIR filter startup.
-
-## Repository Pointers
-
-- RTL source: `src/`
-- Vivado project/scripts: `vivado/`
-- XDMA driver references: `testing/XDMA_drivers/`
-
