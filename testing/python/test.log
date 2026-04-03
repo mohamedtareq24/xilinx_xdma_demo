@@ -1,0 +1,66 @@
+=== XDMA FIR Smoke Test ===
+
+Input file: input_signal.bin (1024 bytes)
+Output file: output_signal.bin
+Taps: [1, 0, 0, 0, 0]
+
+Programming FIR taps...
+$ /mnt/d_drive/Digital_Electronics/XDMA/xilinx_xdma_demo/testing/XDMA_drivers/dma_ip_drivers/XDMA/linux-kernel/tools/reg_rw /dev/xdma0_user 0x4 w 0x1
+device: /dev/xdma0_user, address: 0x4 (0x0+0x4), access write.
+access width: word (32-bits)
+character device /dev/xdma0_user opened.
+Memory 0x0 mapped at address 0x7ff995158000.
+Write 32-bits value 0x00000001 to 0x4 (0x0x7ff995158004)
+
+$ /mnt/d_drive/Digital_Electronics/XDMA/xilinx_xdma_demo/testing/XDMA_drivers/dma_ip_drivers/XDMA/linux-kernel/tools/reg_rw /dev/xdma0_user 0x8 w 0x0
+device: /dev/xdma0_user, address: 0x8 (0x0+0x8), access write.
+access width: word (32-bits)
+character device /dev/xdma0_user opened.
+Memory 0x0 mapped at address 0x7f6f9338b000.
+Write 32-bits value 0x00000000 to 0x8 (0x0x7f6f9338b008)
+
+$ /mnt/d_drive/Digital_Electronics/XDMA/xilinx_xdma_demo/testing/XDMA_drivers/dma_ip_drivers/XDMA/linux-kernel/tools/reg_rw /dev/xdma0_user 0xc w 0x0
+device: /dev/xdma0_user, address: 0xc (0x0+0xc), access write.
+access width: word (32-bits)
+character device /dev/xdma0_user opened.
+Memory 0x0 mapped at address 0x7f8ca9008000.
+Write 32-bits value 0x00000000 to 0xc (0x0x7f8ca900800c)
+
+$ /mnt/d_drive/Digital_Electronics/XDMA/xilinx_xdma_demo/testing/XDMA_drivers/dma_ip_drivers/XDMA/linux-kernel/tools/reg_rw /dev/xdma0_user 0x10 w 0x0
+device: /dev/xdma0_user, address: 0x10 (0x0+0x10), access write.
+access width: word (32-bits)
+character device /dev/xdma0_user opened.
+Memory 0x0 mapped at address 0x7f7d11410000.
+Write 32-bits value 0x00000000 to 0x10 (0x0x7f7d11410010)
+
+$ /mnt/d_drive/Digital_Electronics/XDMA/xilinx_xdma_demo/testing/XDMA_drivers/dma_ip_drivers/XDMA/linux-kernel/tools/reg_rw /dev/xdma0_user 0x14 w 0x0
+device: /dev/xdma0_user, address: 0x14 (0x0+0x14), access write.
+access width: word (32-bits)
+character device /dev/xdma0_user opened.
+Memory 0x0 mapped at address 0x7ffbcc10f000.
+Write 32-bits value 0x00000000 to 0x14 (0x0x7ffbcc10f014)
+
+
+Enabling filter...
+$ /mnt/d_drive/Digital_Electronics/XDMA/xilinx_xdma_demo/testing/XDMA_drivers/dma_ip_drivers/XDMA/linux-kernel/tools/reg_rw /dev/xdma0_user 0x0 w 0x1
+device: /dev/xdma0_user, address: 0x0 (0x0+0x0), access write.
+access width: word (32-bits)
+character device /dev/xdma0_user opened.
+Memory 0x0 mapped at address 0x7f9927467000.
+Write 32-bits value 0x00000001 to 0x0 (0x0x7f9927467000)
+
+
+Starting C2H capture (background)...
+$ /mnt/d_drive/Digital_Electronics/XDMA/xilinx_xdma_demo/testing/XDMA_drivers/dma_ip_drivers/XDMA/linux-kernel/tools/dma_from_device -d /dev/xdma0_c2h_0 -a 0x0 -s 1024 -c 1 -f output_signal.bin &
+Sending H2C data...
+$ /mnt/d_drive/Digital_Electronics/XDMA/xilinx_xdma_demo/testing/XDMA_drivers/dma_ip_drivers/XDMA/linux-kernel/tools/dma_to_device -d /dev/xdma0_h2c_0 -a 0x0 -s 1024 -c 1 -f input_signal.bin
+/dev/xdma0_h2c_0 ** Average BW = 1024, 0.376584
+
+Waiting for C2H completion...
+/dev/xdma0_c2h_0 ** Average BW = 1024, 0.001590
+
+
+=== Transfer Complete ===
+Input:  1024 bytes
+Output: 1024 bytes
+Output file: /mnt/d_drive/Digital_Electronics/XDMA/xilinx_xdma_demo/testing/fir_vectors/output_signal.bin
