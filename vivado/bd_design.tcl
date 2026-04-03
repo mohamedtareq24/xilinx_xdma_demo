@@ -40,7 +40,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# aes_stream_ip_v1_0
+# my_fir_v1_0
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -133,6 +133,7 @@ if { $bCheckIPs == 1 } {
 xilinx.com:ip:xdma:4.1\
 xilinx.com:ip:util_ds_buf:2.2\
 xilinx.com:ip:system_ila:1.1\
+xilinx.com:ip:axis_dwidth_converter:1.1\
 "
 
    set list_ips_missing ""
@@ -158,7 +159,7 @@ xilinx.com:ip:system_ila:1.1\
 set bCheckModules 1
 if { $bCheckModules == 1 } {
    set list_check_mods "\ 
-aes_stream_ip_v1_0\
+my_fir_v1_0\
 "
 
    set list_mods_missing ""
@@ -238,14 +239,18 @@ proc create_root_design { parentCell } {
   # Create instance: xdma_0, and set properties
   set xdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xdma:4.1 xdma_0 ]
   set_property -dict [list \
-    CONFIG.axi_data_width {128_bit} \
+    CONFIG.axi_data_width {64_bit} \
+    CONFIG.axilite_master_en {true} \
+    CONFIG.axilite_master_scale {Kilobytes} \
+    CONFIG.axilite_master_size {4} \
     CONFIG.axist_bypass_en {false} \
     CONFIG.axisten_freq {125} \
     CONFIG.cfg_mgmt_if {false} \
     CONFIG.pcie_extended_tag {false} \
+    CONFIG.pciebar2axibar_axil_master {0xA0000000} \
     CONFIG.pf0_link_status_slot_clock_config {true} \
     CONFIG.pf0_msi_enabled {false} \
-    CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
+    CONFIG.pl_link_cap_max_link_speed {2.5_GT/s} \
     CONFIG.pl_link_cap_max_link_width {X2} \
     CONFIG.ref_clk_freq {100_MHz} \
     CONFIG.xdma_axi_intf_mm {AXI_Stream} \
@@ -279,37 +284,63 @@ proc create_root_design { parentCell } {
   ] $system_ila_0
 
 
-  # Create instance: aes_stream_ip_v1_0_0, and set properties
-  set block_name aes_stream_ip_v1_0
-  set block_cell_name aes_stream_ip_v1_0_0
-  if { [catch {set aes_stream_ip_v1_0_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+  # Create instance: xdma_0_axi_periph, and set properties
+  set xdma_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 xdma_0_axi_periph ]
+  set_property CONFIG.NUM_MI {1} $xdma_0_axi_periph
+
+
+  # Create instance: axis_dwidth_converter_0, and set properties
+  set axis_dwidth_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_0 ]
+  set_property CONFIG.M_TDATA_NUM_BYTES {4} $axis_dwidth_converter_0
+
+
+  # Create instance: my_fir_v1_0_0, and set properties
+  set block_name my_fir_v1_0
+  set block_cell_name my_fir_v1_0_0
+  if { [catch {set my_fir_v1_0_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
      catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
-   } elseif { $aes_stream_ip_v1_0_0 eq "" } {
+   } elseif { $my_fir_v1_0_0 eq "" } {
      catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    }
-  
+    set_property -dict [list \
+    CONFIG.C_M_AXIS_TDATA_WIDTH {32} \
+    CONFIG.C_S_AXIS_TDATA_WIDTH {32} \
+    CONFIG.TAPS {5} \
+  ] $my_fir_v1_0_0
+
+
+  # Create instance: axis_dwidth_converter_1, and set properties
+  set axis_dwidth_converter_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_1 ]
+  set_property CONFIG.M_TDATA_NUM_BYTES {8} $axis_dwidth_converter_1
+
+
   # Create interface connections
-  connect_bd_intf_net -intf_net aes_stream_ip_v1_0_0_m00_axis [get_bd_intf_pins aes_stream_ip_v1_0_0/m00_axis] [get_bd_intf_pins xdma_0/S_AXIS_C2H_0]
-connect_bd_intf_net -intf_net [get_bd_intf_nets aes_stream_ip_v1_0_0_m00_axis] [get_bd_intf_pins aes_stream_ip_v1_0_0/m00_axis] [get_bd_intf_pins system_ila_0/SLOT_1_AXIS]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets aes_stream_ip_v1_0_0_m00_axis]
+  connect_bd_intf_net -intf_net axis_dwidth_converter_0_M_AXIS [get_bd_intf_pins my_fir_v1_0_0/s_axis] [get_bd_intf_pins axis_dwidth_converter_0/M_AXIS]
+connect_bd_intf_net -intf_net [get_bd_intf_nets axis_dwidth_converter_0_M_AXIS] [get_bd_intf_pins my_fir_v1_0_0/s_axis] [get_bd_intf_pins system_ila_0/SLOT_1_AXIS]
+  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets axis_dwidth_converter_0_M_AXIS]
+  connect_bd_intf_net -intf_net axis_dwidth_converter_1_M_AXIS [get_bd_intf_pins axis_dwidth_converter_1/M_AXIS] [get_bd_intf_pins xdma_0/S_AXIS_C2H_0]
   connect_bd_intf_net -intf_net diff_clock_rtl_0_1 [get_bd_intf_ports clk_100] [get_bd_intf_pins util_ds_buf/CLK_IN_D]
-  connect_bd_intf_net -intf_net xdma_0_M_AXIS_H2C_0 [get_bd_intf_pins aes_stream_ip_v1_0_0/s00_axis] [get_bd_intf_pins xdma_0/M_AXIS_H2C_0]
-connect_bd_intf_net -intf_net [get_bd_intf_nets xdma_0_M_AXIS_H2C_0] [get_bd_intf_pins aes_stream_ip_v1_0_0/s00_axis] [get_bd_intf_pins system_ila_0/SLOT_0_AXIS]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets xdma_0_M_AXIS_H2C_0]
+  connect_bd_intf_net -intf_net my_fir_v1_0_0_m_axis [get_bd_intf_pins my_fir_v1_0_0/m_axis] [get_bd_intf_pins axis_dwidth_converter_1/S_AXIS]
+connect_bd_intf_net -intf_net [get_bd_intf_nets my_fir_v1_0_0_m_axis] [get_bd_intf_pins my_fir_v1_0_0/m_axis] [get_bd_intf_pins system_ila_0/SLOT_0_AXIS]
+  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets my_fir_v1_0_0_m_axis]
+  connect_bd_intf_net -intf_net xdma_0_M_AXIS_H2C_0 [get_bd_intf_pins xdma_0/M_AXIS_H2C_0] [get_bd_intf_pins axis_dwidth_converter_0/S_AXIS]
+  connect_bd_intf_net -intf_net xdma_0_M_AXI_LITE [get_bd_intf_pins xdma_0/M_AXI_LITE] [get_bd_intf_pins xdma_0_axi_periph/S00_AXI]
+  connect_bd_intf_net -intf_net xdma_0_axi_periph_M00_AXI [get_bd_intf_pins xdma_0_axi_periph/M00_AXI] [get_bd_intf_pins my_fir_v1_0_0/s_axi]
   connect_bd_intf_net -intf_net xdma_0_pcie_mgt [get_bd_intf_ports pcie_io] [get_bd_intf_pins xdma_0/pcie_mgt]
 
   # Create port connections
-  connect_bd_net -net Net [get_bd_pins xdma_0/axi_aclk] [get_bd_pins system_ila_0/clk] [get_bd_pins aes_stream_ip_v1_0_0/s00_axis_aclk] [get_bd_pins aes_stream_ip_v1_0_0/m00_axis_aclk]
+  connect_bd_net -net Net [get_bd_pins xdma_0/axi_aclk] [get_bd_pins system_ila_0/clk] [get_bd_pins xdma_0_axi_periph/ACLK] [get_bd_pins xdma_0_axi_periph/S00_ACLK] [get_bd_pins xdma_0_axi_periph/M00_ACLK] [get_bd_pins axis_dwidth_converter_0/aclk] [get_bd_pins my_fir_v1_0_0/s_axis_aclk] [get_bd_pins my_fir_v1_0_0/m_axis_aclk] [get_bd_pins axis_dwidth_converter_1/aclk] [get_bd_pins my_fir_v1_0_0/s_axi_aclk]
   connect_bd_net -net reset_n [get_bd_ports reset_n] [get_bd_pins xdma_0/sys_rst_n]
   connect_bd_net -net user_lnk_up [get_bd_pins xdma_0/user_lnk_up] [get_bd_pins system_ila_0/probe0]
   set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets user_lnk_up]
   connect_bd_net -net util_ds_buf_IBUF_DS_ODIV2 [get_bd_pins util_ds_buf/IBUF_DS_ODIV2] [get_bd_pins xdma_0/sys_clk]
   connect_bd_net -net util_ds_buf_IBUF_OUT [get_bd_pins util_ds_buf/IBUF_OUT] [get_bd_pins xdma_0/sys_clk_gt]
-  connect_bd_net -net xdma_0_axi_aresetn [get_bd_pins xdma_0/axi_aresetn] [get_bd_pins system_ila_0/resetn] [get_bd_pins aes_stream_ip_v1_0_0/s00_axis_aresetn] [get_bd_pins aes_stream_ip_v1_0_0/m00_axis_aresetn]
+  connect_bd_net -net xdma_0_axi_aresetn [get_bd_pins xdma_0/axi_aresetn] [get_bd_pins system_ila_0/resetn] [get_bd_pins xdma_0_axi_periph/S00_ARESETN] [get_bd_pins xdma_0_axi_periph/M00_ARESETN] [get_bd_pins xdma_0_axi_periph/ARESETN] [get_bd_pins axis_dwidth_converter_0/aresetn] [get_bd_pins my_fir_v1_0_0/s_axis_aresetn] [get_bd_pins my_fir_v1_0_0/m_axis_aresetn] [get_bd_pins axis_dwidth_converter_1/aresetn] [get_bd_pins my_fir_v1_0_0/s_axi_aresetn]
 
   # Create address segments
+  assign_bd_address -offset 0x00000000 -range 0x00000400 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs my_fir_v1_0_0/s_axi/reg0] -force
 
 
   # Restore current instance
