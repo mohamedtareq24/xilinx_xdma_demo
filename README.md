@@ -18,6 +18,14 @@ In this demo, XDMA is the bridge between host software and the FIR hardware in p
 
 ## 2) Hardware Overview (FIR + Vivado Block Design)
 
+### Target Board and FPGA Device
+
+- **Board used:** Puzhi PZ-ZU4EV
+- **FPGA device used:** `xczu4ev-sfvc784-2-i` (Xilinx Zynq UltraScale+ MPSoC family).
+
+![Board used in this demo](docs/board.png)
+The board is connected to the host PC via one of the PCIe slots on the motherboard
+
 The hardware design includes:
 
 - Xilinx XDMA IP (PCIe endpoint and DMA engine)
@@ -199,6 +207,10 @@ Automates the complete test flow with no CLI args—just reads from file, proces
 5. Sends H2C data (Host → FPGA)
 6. Waits for transfer completion
 7. Verifies output file (`output_signal.bin`)
+
+ILA capture of AXI-Stream activity during the Python smoke run:
+
+![ILA capture of AXI streams](docs/ILA.png)
 
 **Usage:**
 
